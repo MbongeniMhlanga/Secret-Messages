@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Messages</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .message {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .timestamp {
+            font-size: 12px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <h1>Your Messages</h1>
+    <div id="messagesContainer"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.js"></script>
+    <script>
+        const userId = localStorage.getItem('userId'); // Get the user ID from localStorage
+
+        function decryptMessage(encrypted) {
+            const key = CryptoJS.enc.Utf8.parse('12345678901234567890123456789012'); // 32-byte key
+            const iv = CryptoJS.enc.Utf8.parse('1234567890123456'); // 16-byte IV
+            const decrypted = CryptoJS.AES.decrypt(encrypted, key, { iv: iv });
+            return decrypted.toString(CryptoJS.enc.Utf8);
+        }
+
+        function fetchMessages() {
+            if (!userId) {
+                alert('User not logged in. Please log in to view messages.');
+                return;
+            }
+
+            fetch(`http://10.254.167.120:3000/messages?user=${userId}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token') // Use token for authentication
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const messagesContainer = document.getElementById('messagesContainer');
+                messagesContainer.innerHTML = '';
+
+                if (data.messages && data.messages.length > 0) {
+                    data.messages.forEach(message => {
+                        const messageDiv = document.createElement('div');
+                        messageDiv.className = 'message';
+                        
+                        // Decrypt the message
+                        const decryptedMessage = decryptMessage(message.encrypted_message);
+                        
+                        // Create a timestamp for the message
+                        const timestamp = new Date(message.created_at).toLocaleString(); // Format the date and time
+                        messageDiv.innerHTML = `<strong>Message:</strong> ${decryptedMessage}<br><span class="timestamp">${timestamp}</span>`;
+                        
+                        messagesContainer.appendChild(messageDiv);
+                    });
+                } else {
+                    messagesContainer.textContent = 'No messages found.';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching messages:', error);
+                alert('Failed to fetch messages.');
+            });
+        }
+
+        // Fetch messages on page load
+        window.onload = fetchMessages;
+    </script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            background-color: #5cb85c;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #4cae4c;
+        }
+
+        .share-buttons {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <p>Welcome</p>
+    <h1 id="userName">User Profile</h1> <!-- ID for user name -->
+
+    <div>
+        <button onclick="viewMessages()">View Messages</button>
+    </div>
+    <div class="share-buttons">
+        <h3>Share Your Link:</h3>
+        <button onclick="shareLink('whatsapp')">Share on WhatsApp</button>
+        <button onclick="shareLink('facebook')">Share on Facebook</button>
+        <button onclick="shareLink('instagram')">Share on Instagram</button>
+    </div>
+    <div>
+        <button onclick="logout()">Logout</button> <!-- Logout button styled like others -->
+    </div>
+
+    <script>
+        // Retrieve the user ID and name from localStorage
+        const userId = localStorage.getItem('userId'); // Get actual user ID from local storage
+        const userName = localStorage.getItem('userName'); // Get user's name from local storage
+
+        // Check if userId is defined
+        if (!userId) {
+            alert("User ID not found. Please log in again.");
+            window.location.href = 'index.html'; // Redirect to login page if userId is not found
+        }
+
+        // Set the user's name in the header
+        document.getElementById('userName').textContent = userName ? userName : "User Profile";
+
+        function viewMessages() {
+            window.location.href = 'messages.html'; // Redirect to messages page
+        }
+    
+        function shareLink(platform) {
+            const userLink = `http://10.254.167.120:3000/send-message.html?user=${userId}`;
+            let shareUrl = '';
+    
+            if (platform === 'whatsapp') {
+                shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(userLink)}`;
+            } else if (platform === 'facebook') {
+                shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(userLink)}`;
+            } else if (platform === 'instagram') {
+                alert("Sharing on Instagram is not directly supported. Please copy the link manually.");
+                return;
+            }
+    
+            window.open(shareUrl, '_blank');
+        }
+
+        function logout() {
+            // Clear the local storage
+            localStorage.removeItem('userId');
+            localStorage.removeItem('userName');
+            // Redirect to the login page
+            window.location.href = 'index.html';
+        }
+    </script>
+    
+</body>
+</html>
